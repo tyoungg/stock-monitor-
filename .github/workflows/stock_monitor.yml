@@ -58,17 +58,19 @@ jobs:
       # Prepare alerts output
       # ----------------------------
       - name: Prepare alerts output
+      - name: Prepare alerts output
         id: prepare
         run: |
           if [ -f alerts.json ]; then
-            ALERTS_TEXT=$(python - <<'PY'
+            python - <<'PY'
             import json
             alerts = json.load(open("alerts.json"))
-            print("\n\n".join(a.get("text","") for a in alerts))
+            with open("alerts.txt", "w", encoding="utf-8") as f:
+                f.write("\n\n".join(a.get("text","") for a in alerts))
             PY
-            )
+
             echo "alerts<<EOF" >> $GITHUB_OUTPUT
-            echo "$ALERTS_TEXT" >> $GITHUB_OUTPUT
+            cat alerts.txt >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           else
             echo "alerts=" >> $GITHUB_OUTPUT
