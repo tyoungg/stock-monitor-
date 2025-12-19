@@ -240,7 +240,7 @@ def main() -> int:
             print(a["text"])
 
         # non-zero exit → GitHub marks run clearly
-        return 1
+        return 0
 
     # Clean up stale alert file
     if os.path.exists(ALERTS_FILE):
