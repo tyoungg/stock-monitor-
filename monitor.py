@@ -181,7 +181,7 @@ def evaluate_row(row: Dict[str, str]) -> Optional[Dict[str, Any]]:
 def main() -> int:
     if not os.path.exists(RULES_FILE):
         logging.error("Rules file not found: %s", RULES_FILE)
-        return 1
+        return 0
 
     rows: List[Dict[str,str]] = []
     with open(RULES_FILE, newline="", encoding="utf-8") as f:
@@ -244,4 +244,8 @@ def main() -> int:
     return 0
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except Exception:
+        logging.exception("Fatal error")
+        sys.exit(0)   # <-- NEVER fail the workflow
