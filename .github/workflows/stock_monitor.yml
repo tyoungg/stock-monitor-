@@ -2,12 +2,11 @@ name: Stock Monitor
 
 on:
   schedule:
-    # every hour
     - cron: '0 * * * *'
   workflow_dispatch:
     inputs:
       stocks:
-        description: 'Comma-separated list of stock symbols to monitor'
+        description: 'Comma-separated list of stock symbols'
         required: false
         default: ''
       default_pct_up:
@@ -40,9 +39,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # ----------------------------
-      # Run stock monitor (never fail job)
-      # ----------------------------
       - name: Run stock monitor
         id: run_monitor
         env:
@@ -50,14 +46,8 @@ jobs:
           STOCK_LIST: ${{ github.event.inputs.stocks }}
           DEFAULT_PCT_UP: ${{ github.event.inputs.default_pct_up }}
           DEFAULT_PCT_DOWN: ${{ github.event.inputs.default_pct_down }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-        run: |
-          python monitor.py || true
+        run: python monitor.py || true
 
-      # ----------------------------
-      # Prepare alerts output
-      # ----------------------------
-      - name: Prepare alerts output
       - name: Prepare alerts output
         id: prepare
         run: |
@@ -65,16 +55,14 @@ jobs:
             python - <<'PY'
             import json
             alerts = json.load(open("alerts.json"))
-            with open("alerts.txt", "w", encoding="utf-8") as f:
+            with open("alerts.txt","w",encoding="utf-8") as f:
                 f.write("\n\n".join(a.get("text","") for a in alerts))
             PY
-
             echo "alerts<<EOF" >> $GITHUB_OUTPUT
             cat alerts.txt >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           else
             echo "alerts=" >> $GITHUB_OUTPUT
-          fi
 
       - name: Upload alerts artifact
         if: steps.prepare.outputs.alerts != ''
@@ -83,9 +71,6 @@ jobs:
           name: alerts-json
           path: alerts.json
 
-      # ----------------------------
-      # Send Discord embeds (batched safely)
-      # ----------------------------
       - name: Send Discord embeds
         if: steps.prepare.outputs.alerts != ''
         env:
@@ -94,28 +79,37 @@ jobs:
           python - <<'PY'
           import json, requests
 
-          alerts = json.load(open("alerts.json"))
-
-          def chunks(lst, n):
-              for i in range(0, len(lst), n):
+          def chunks(lst,n):
+              for i in range(0,len(lst),n):
                   yield lst[i:i+n]
 
+          alerts = json.load(open("alerts.json"))
           embeds = []
           for a in alerts:
               color = 3066993
-              if a.get("severity") == "down":
-                  color = 15158332
-
+              if a.get("severity")=="down": color=15158332
               embeds.append({
                   "title": f"{a.get('symbol')} alert",
                   "description": a.get("text","")[:4000],
                   "color": color
               })
-
-          for batch in chunks(embeds, 10):
-              requests.post(
-                  "${WEBHOOK}",
-                  json={"embeds": batch},
-                  timeout=10
-              )
+          for batch in chunks(embeds,10):
+              requests.post("${WEBHOOK}", json={"embeds": batch}, timeout=10)
           PY
+
+      - name: Send market close recap
+        if: always()
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL || secrets.STOCK_MONITOR_WEBHOOK }}
+        run: |
+          if [ -f recap.json ]; then
+            python - <<'PY'
+            import json, requests
+            recap = json.load(open("recap.json"))
+            embed = {
+                "title": recap["title"],
+                "description": "\n".join(recap["lines"])[:4000],
+                "color": 3447003
+            }
+            requests.post("${WEBHOOK}", json={"embeds":[embed]}, timeout=10)
+            PY
