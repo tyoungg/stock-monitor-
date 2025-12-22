@@ -2,6 +2,7 @@ symbol,low,high,pct_up,pct_down,webhook
 AAPL,255.00,295.00,,,
 ALNY,400.00,450.00,,,
 AWK,100.00,,,,
+AMZN,199.00,200.00,,,
 BEN,21.00,25.00,,,
 BITI,2.00,25.00,7.00,7.00,
 BITO,12.00,15.00,,,
