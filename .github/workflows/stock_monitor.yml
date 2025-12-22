@@ -51,21 +51,19 @@ jobs:
       - name: Prepare alerts output
         id: prepare
         run: |
-          if [ -f alerts.json ]; then
-python - <<'PY'
+         if [ -f alerts.json ]; then
+           python - <<'PY'
 import json
-
 alerts = json.load(open("alerts.json"))
-
 with open("alerts.txt", "w", encoding="utf-8") as f:
     for a in alerts:
         f.write(a.get("text", "") + "\n\n")
 PY
-            echo "alerts<<EOF" >> "$GITHUB_OUTPUT"
-            cat alerts.txt >> "$GITHUB_OUTPUT"
-            echo "EOF" >> "$GITHUB_OUTPUT"
-          else
-            echo "alerts=" >> "$GITHUB_OUTPUT"
+          echo "alerts<<EOF" >> "$GITHUB_OUTPUT"
+          cat alerts.txt >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+         else
+          echo "alerts=" >> "$GITHUB_OUTPUT"
 
       - name: Upload alerts artifact
         if: steps.prepare.outputs.alerts != ''
