@@ -101,3 +101,60 @@ jobs:
           PY
           # post to webhook
           curl -s -H "Content-Type: application/json" -d @discord_payload.json "$WEBHOOK" >/dev/null
+
+      - name: Send email alerts
+        if: steps.prepare.outputs.alerts != ''
+        env:
+          MAIL_SERVER: ${{ secrets.MAIL_SERVER }}
+          MAIL_PORT: ${{ secrets.MAIL_PORT }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          ALERT_EMAIL_RECIPIENT: ${{ secrets.ALERT_EMAIL_RECIPIENT }}
+        run: |
+          python - <<'PY'
+          import json, smtplib, os, sys
+          from email.message import EmailMessage
+
+          alerts = json.load(open('alerts.json'))
+
+          if not alerts:
+              print("No alerts to send.")
+              sys.exit(0)
+
+          recipient = os.environ.get('ALERT_EMAIL_RECIPIENT')
+          if not recipient:
+              print("ALERT_EMAIL_RECIPIENT not set. Skipping email.")
+              sys.exit(0)
+
+          # Aggregate alerts into one email
+          subject = f"Stock Market Alerts ({len(alerts)} triggers)"
+          body_lines = [a.get('text', '') for a in alerts]
+          body = "\n\n".join(body_lines)
+
+          print(f"Sending aggregated email to {recipient}")
+
+          msg = EmailMessage()
+          msg.set_content(body)
+          msg['Subject'] = subject
+          msg['From'] = os.environ.get('MAIL_USERNAME')
+          msg['To'] = recipient
+
+          server = os.environ.get('MAIL_SERVER')
+          port = int(os.environ.get('MAIL_PORT', 587))
+          username = os.environ.get('MAIL_USERNAME')
+          password = os.environ.get('MAIL_PASSWORD')
+
+          if not all([server, port, username, password]):
+              print("Email server not configured. Skipping email.")
+              sys.exit(0)
+
+          try:
+              with smtplib.SMTP(server, port) as s:
+                  s.starttls()
+                  s.login(username, password)
+                  s.send_message(msg)
+              print(f"Aggregated email sent to {recipient}")
+          except Exception as e:
+              print(f"Failed to send aggregated email: {e}")
+              sys.exit(1)
+          PY
