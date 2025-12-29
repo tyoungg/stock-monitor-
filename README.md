@@ -44,9 +44,8 @@ Happy monitoring! 🎯
 ---
 
 ### 📧 Email Alerts
-You can also receive alerts via email. To do so, add an `email` column to your `rules.csv` file and specify the recipient's email address.
-
-You will also need to configure the following secrets in your GitHub repository:
+You can receive a single email with all alerts. To do so, you will need to configure the following secrets in your GitHub repository:
+- `ALERT_EMAIL_RECIPIENT`: The email address to send the alerts to.
 - `MAIL_SERVER`: The SMTP server address.
 - `MAIL_PORT`: The SMTP server port.
 - `MAIL_USERNAME`: The username for the SMTP server.
