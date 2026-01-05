@@ -111,8 +111,9 @@ def save_recap(data: dict) -> None:
     with open(RECAP_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
+
 def is_market_close_window() -> bool:
-    now = datetime.utcnow().time()
+    now =  = datetime.now(ZoneInfo("America/New_York")).time() # datetime.utcnow().time()
     # Approx. 4:05–4:30pm ET = 20:05–20:30 UTC
     return time(20, 5) <= now <= time(20, 30)
 
