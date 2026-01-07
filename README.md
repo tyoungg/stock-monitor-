@@ -50,4 +50,6 @@ You can receive a single email with all alerts. To do so, you will need to confi
 - `MAIL_PORT`: The SMTP server port.
 - `MAIL_USERNAME`: The username for the SMTP server.
 - `MAIL_PASSWORD`: The password for the SMTP server.
-stock monitor try
+
+### 📊 Market Recap Email
+In addition to alerts, a daily market recap email is sent shortly after the market closes. This email provides a summary of the day's performance for all monitored stocks in a formatted HTML table.
