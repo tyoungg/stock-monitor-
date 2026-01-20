@@ -1,3 +1,6 @@
 {
-  "^VIX": true
+  "^VIX": true,
+  "AAPL": true,
+  "SLV": true,
+  "UVXY": true
 }
