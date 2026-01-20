@@ -2,5 +2,6 @@
   "^VIX": true,
   "AAPL": true,
   "SLV": true,
-  "UVXY": true
+  "UVXY": true,
+  "^SPX": true
 }
