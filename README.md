@@ -52,6 +52,8 @@ You will see a table with all the current rules. You can edit the values, add ne
 
 Below the rules editor, you will find a section for "Silenced Alerts". This table shows you which alerts have been triggered and are currently silenced. You can re-enable individual alerts or clear all silenced alerts using the buttons provided.
 
+**Note on Debug Mode:** For security, the Flask server runs with debug mode disabled by default. If you are developing the tool and need more detailed error messages, you can temporarily enable it by changing `app.run(debug=False)` to `app.run(debug=True)` at the end of the `server.py` file.
+
 ---
 
 ### ✅ CI validation & artifacts
